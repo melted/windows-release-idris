@@ -32,10 +32,10 @@ p = subprocess.run([msys_dir+"usr/bin/cygpath", "-u", repo_dir], shell=True,
 
 posix_repo = p.stdout
 
-shellscript = "cd " + posix_repo.decode().rstrip() + " && ./win-release.sh"
+shellscript64 = "cd " + posix_repo.decode().rstrip() + " && ./win-release.sh"
+shellscript32 = "PATH=/d/Apps/ghc-7.10.3-i386/bin:$PATH && " + shellscript64
 
-
-def build(target, rts_dir):
+def build(target, rts_dir, shellscript):
     bin_dir = repo_dir+".cabal-sandbox/bin/"
     make_cmd = [msys_dir + 'usr/bin/bash', '-l', '-c', shellscript]
     print(make_cmd)
@@ -48,7 +48,7 @@ def build(target, rts_dir):
 
 os.chdir(repo_dir)
 os.putenv("MSYSTEM", "MINGW32")
-build(target32, rts32)
+build(target32, rts32, shellscript32)
 
 os.putenv("MSYSTEM", "MINGW64")
-build(target64, rts64)
+build(target64, rts64, shellscript64)
