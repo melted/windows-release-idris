@@ -33,7 +33,7 @@ p = subprocess.run([msys_dir+"usr/bin/cygpath", "-u", repo_dir], shell=True,
 posix_repo = p.stdout
 
 shellscript64 = "cd " + posix_repo.decode().rstrip() + " && ./win-release.sh"
-shellscript32 = "PATH=/d/Apps/ghc-7.10.3-i386/bin:$PATH && " + shellscript64
+shellscript32 = "export PATH=/d/Apps/ghc-7.10.3-i386/bin:$PATH && " + shellscript64
 
 def build(target, rts_dir, shellscript):
     bin_dir = repo_dir+".cabal-sandbox/bin/"
@@ -46,6 +46,7 @@ def build(target, rts_dir, shellscript):
     shutil.copy(bin_dir+"idris-codegen-node.exe", target)
     shutil.copytree(rts_dir, target+"/libs")
 
+os.putenv("MSYS2_PATH_TYPE", "inherit")
 os.chdir(repo_dir)
 os.putenv("MSYSTEM", "MINGW32")
 build(target32, rts32, shellscript32)
