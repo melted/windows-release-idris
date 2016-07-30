@@ -30,9 +30,7 @@ def posix_path(path):
 web_posix = posix_path(web_dir)
 repo_posix = posix_path(repo_dir)
 
-
 bash = msys_dir + 'usr/bin/bash'
-
 
 def build(target, rts_dir, shellscript, toolchain, bits):
     os.putenv("MSYSTEM", "MINGW" + str(bits))
@@ -55,8 +53,8 @@ def build(target, rts_dir, shellscript, toolchain, bits):
     shutil.copy(archive_name + '.7z', web_dir)
     shutil.copy(archive_name + '.exe', web_dir)
     
-rts32 = repo_dir+".cabal-sandbox/i386-windows-ghc-7.10.3/idris-"+version
-rts64 = repo_dir+".cabal-sandbox/x86_64-windows-ghc-7.10.3/idris-"+version
+rts32 = repo_dir + ".cabal-sandbox/i386-windows-ghc-7.10.3/idris-" + version
+rts64 = repo_dir + ".cabal-sandbox/x86_64-windows-ghc-7.10.3/idris-" + version
 target32 = target_dir + "idris-" + version + "-win32"
 target64 = target_dir + "idris-" + version
 
