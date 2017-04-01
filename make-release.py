@@ -2,6 +2,7 @@ import sys
 import os
 import shutil
 import subprocess
+import tempfile
 
 
 # Configuration
@@ -14,7 +15,7 @@ archive_dir = "Z:/idris-build/idris/"              # Not used yet. Where to stor
 compressor  = "C:/Apps/7-zip/7z.exe"               # The path to the 7-zip executable
 web_dir     = "D:/Niklas/repo/xim/neon/idris/"     # Where to copy the archives for web publication locally  
 ghc32_posix = "/d/Apps/ghc-7.10.3-i386/bin"        # The path to the 32-bit GHC in msys-format  
-upload_path = 'niklas@neon.se:/usr/local/www/neon' # The server dir to rsync to.
+upload_path = 'niklas@neon.se:/usr/local/www/neon/idris' # The server dir to rsync to.
 
 if len(sys.argv) < 2:
     print("No version argument")
@@ -32,11 +33,21 @@ repo_posix = posix_path(repo_dir)
 
 bash = msys_dir + 'usr/bin/bash'
 
-def build(target, rts_dir, shellscript, toolchain, bits):
+def build_docs(target):
+    os.putenv("MSYSTEM", "MINGW64")
+    print("Building docs in "+ target)
+    command = "cd " + repo_posix + " && make user_docs"
+    make_cmd = [bash, '-l', '-c', command]
+    subprocess.run(make_cmd)
+    shutil.copytree(repo_dir+'/docs/_build/html', target+'/html')
+    shutil.copyfile(repo_dir+'/docs/_build/latex/idris.pdf', target+'/idris.pdf')
+
+def build(target, rts_dir, shellscript, toolchain, doc_dir, bits):
     os.putenv("MSYSTEM", "MINGW" + str(bits))
     dist_dir = target + "/idris/"
     os.makedirs(dist_dir)
     shutil.copytree(toolchain, dist_dir+"/mingw")
+    shutil.copytree(doc_dir, dist_dir+'/doc')
     bin_dir = repo_dir + ".cabal-sandbox/bin/"
     make_cmd = [bash, '-l', '-c', shellscript]
     subprocess.run(make_cmd)
@@ -54,7 +65,7 @@ def build(target, rts_dir, shellscript, toolchain, bits):
     shutil.copy(archive_name + '.exe', web_dir)
     
 rts32 = repo_dir + ".cabal-sandbox/i386-windows-ghc-7.10.3/idris-" + version
-rts64 = repo_dir + ".cabal-sandbox/x86_64-windows-ghc-7.10.3/idris-" + version
+rts64 = repo_dir + ".cabal-sandbox/x86_64-windows-ghc-8.0.1/idris-" + version
 target32 = target_dir + "idris-" + version + "-win32"
 target64 = target_dir + "idris-" + version
 
@@ -63,7 +74,10 @@ shellscript32 = "export PATH=" + ghc32_posix + ":$PATH && " + shellscript64
 
 os.putenv("MSYS2_PATH_TYPE", "inherit")
 os.chdir(repo_dir)
-build(target32, rts32, shellscript32, toolchain32, 32)
-build(target64, rts64, shellscript64, toolchain64, 64)
+temp_doc_dir = tempfile.mkdtemp('', 'idris_doc')
+build_docs(temp_doc_dir)
+build(target32, rts32, shellscript32, toolchain32, temp_doc_dir, 32)
+build(target64, rts64, shellscript64, toolchain64, temp_doc_dir, 64)
 
+shutil.rmtree(temp_doc_dir)
 subprocess.run([bash, '-l', '-c', 'rsync -avP ' + web_posix + ' ' + upload_path])
