@@ -65,7 +65,7 @@ def build(target, rts_dir, shellscript, toolchain, doc_dir, bits):
     shutil.copy(archive_name + '.exe', web_dir)
     
 rts32 = repo_dir + ".cabal-sandbox/i386-windows-ghc-7.10.3/idris-" + version
-rts64 = repo_dir + ".cabal-sandbox/x86_64-windows-ghc-8.0.1/idris-" + version
+rts64 = repo_dir + ".cabal-sandbox/x86_64-windows-ghc-8.0.2/idris-" + version
 target32 = target_dir + "idris-" + version + "-win32"
 target64 = target_dir + "idris-" + version
 
@@ -75,7 +75,6 @@ shellscript32 = "export PATH=" + ghc32_posix + ":$PATH && " + shellscript64
 os.putenv("MSYS2_PATH_TYPE", "inherit")
 os.chdir(repo_dir)
 temp_doc_dir = tempfile.mkdtemp('', 'idris_doc')
-build_docs(temp_doc_dir)
 build(target32, rts32, shellscript32, toolchain32, temp_doc_dir, 32)
 build(target64, rts64, shellscript64, toolchain64, temp_doc_dir, 64)
 
